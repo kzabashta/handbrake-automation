@@ -5,6 +5,19 @@ import configparser
 
 import click
 
+def __load_processed_files(config):
+    fpath = config['processed_files']['path']
+    processed_files = open(fpath, 'r')
+    processed = processed_files.readlines()
+    processed_files.close()
+    return set(processed)
+
+def __save_processed_file(config, fpath):
+    fpath = config['processed_files']['path']
+    processed_files = open(fpath, 'a')
+    processed_files.writelines([fpath])
+    processed_files.close()
+
 def __get_source_location(config):
     return config['source']['location']
 
@@ -90,11 +103,14 @@ def main():
 
     # get a list of files to convert
     file_list = scan_source(__get_source_location(config))
+    processed = __load_processed_files(config)
 
     # start copying
     for file_path in file_list:
-        converted_path = convert(file_path, config)
-        save(converted_path, config)
+        if file_path not in processed:
+            converted_path = convert(file_path, config)
+            save(converted_path, config)
+            __save_processed_file(config, file_path)
 
 if __name__ == '__main__':
     main()
