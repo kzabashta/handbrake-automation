@@ -1,11 +1,19 @@
 import os
+import mimetypes
 import configparser
 
 def __get_source_location(config):
     return config['source']['location']
 
 def scan_source(location):
-    print(location)
+    for root, dirs, files in os.walk(location):
+        for filename in files:
+            file_path = os.path.join(root, filename)
+            print(file_path)
+            if(mimetypes.guess_type(filename)[0] is not None and 
+                mimetypes.guess_type(filename)[0].split('/')[0] == 'video'):
+                print(filename)
+                print
 
 def main():
     config = configparser.ConfigParser()
