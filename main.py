@@ -8,22 +8,26 @@ import click
 def __get_source_location(config):
     return config['source']['location']
 
-def __copy_temp(config, source_file_path):
+def __copy_temp(config, source_file_path, from_source=True):
     buffer_size=16*1024
 
-    source_path = config['source']['location']
+    if from_source:
+        source_path = config['source']['location']
+    else:
+        source_path = config['converted_temp']['location']
     copy_file_path = source_file_path.replace(source_path, '')[1:]
-    destination_path = os.path.join(config['temp']['location'], copy_file_path)
-    """
+    if from_source:
+        destination_path = os.path.join(config['temp']['location'], copy_file_path)
+    else:
+        destination_path = os.path.join(config['destination']['location'], copy_file_path)
+
     if not os.path.exists(os.path.dirname(destination_path)):
          os.makedirs(os.path.dirname(destination_path))
-
 
     try:
         os.remove(destination_path)
     except OSError:
         pass
-
 
     fsource = open(source_file_path, 'rb')
     fdestination = open(destination_path, 'wb')
@@ -41,7 +45,7 @@ def __copy_temp(config, source_file_path):
 
     fsource.close()
     fdestination.close()
-    """
+
     return destination_path
 
 def scan_source(location):
@@ -60,9 +64,25 @@ def convert(source_path, config):
     filename = os.path.splitext(os.path.basename(source_path))[0]+'.mp4'
     converted_temp_path = os.path.join(config['converted_temp']['location'], filename)
 
-    handbrake_cli += ' -i ' + source_path + ' -o ' + converted_temp_path + ' --preset="Apple 1080p30 Surround"'
+    handbrake_cli += ' -i "' + source_path + '" -o "' + converted_temp_path + '" --preset="Apple 1080p30 Surround"'
+
     subprocess.call(handbrake_cli)
-    print("DONE")
+
+    try:
+        os.remove(source_path)
+    except OSError:
+        pass
+
+    return converted_temp_path
+
+def save(converted_path, config):
+
+    __copy_temp(config, converted_path, from_source=False)
+
+    try:
+        os.remove(converted_path)
+    except OSError:
+        pass
 
 def main():
     config = configparser.ConfigParser()
@@ -73,8 +93,8 @@ def main():
 
     # start copying
     for file_path in file_list:
-        convert(file_path, config)
-        break
+        converted_path = convert(file_path, config)
+        save(converted_path, config)
 
 if __name__ == '__main__':
     main()
