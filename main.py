@@ -8,14 +8,14 @@ import click
 def __load_processed_files(config):
     fpath = config['processed_files']['path']
     processed_files = open(fpath, 'r')
-    processed = processed_files.readlines()
+    processed = map(lambda s: s.strip(), processed_files.readlines())
     processed_files.close()
     return set(processed)
 
 def __save_processed_file(config, fpath):
     f_processed_path = config['processed_files']['path']
     processed_files = open(f_processed_path, 'a')
-    processed_files.write(fpath)
+    processed_files.write(fpath + '\n')
     processed_files.close()
 
 def __get_source_location(config):
