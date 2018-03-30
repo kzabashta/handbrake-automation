@@ -13,9 +13,9 @@ def __load_processed_files(config):
     return set(processed)
 
 def __save_processed_file(config, fpath):
-    fpath = config['processed_files']['path']
-    processed_files = open(fpath, 'a')
-    processed_files.writelines([fpath])
+    f_processed_path = config['processed_files']['path']
+    processed_files = open(f_processed_path, 'a')
+    processed_files.write(fpath)
     processed_files.close()
 
 def __get_source_location(config):
